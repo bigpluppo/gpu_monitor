@@ -12,7 +12,7 @@ from pathlib import Path
 import os
 
 class GPUMonitor:
-    def __init__(self, update_interval=1):
+    def __init__(self, update_interval=0.25):
         # Set dark theme for matplotlib
         plt.style.use('dark_background')
         
@@ -150,9 +150,9 @@ class GPUMonitor:
             print(f"Error reading GPU metrics: {e}")
             return 0, 0, 0, 0
             
-    def get_frame_index(self, value, max_value, frames):
+    def get_frame_index(self, value, max_value, frames, min_value=0):
         """Convert a value to a frame index"""
-        normalized = min(value / max_value, 1.0)
+        normalized = max(min((value-min_value) / (max_value-min_value), 1.0),0)
         return int(normalized * (len(frames) - 1))
             
     def update(self, frame):
@@ -208,7 +208,7 @@ class GPUMonitor:
         
         # Update GIF frames
         util_frame = self.util_frames[self.get_frame_index(util, 100, self.util_frames)]
-        temp_frame = self.temp_frames[self.get_frame_index(temp, 100, self.temp_frames)]
+        temp_frame = self.temp_frames[self.get_frame_index(temp, 100, self.temp_frames,min_value=25)]
         mem_frame = self.mem_frames[self.get_frame_index(mem_used, mem_total, self.mem_frames)]
         
         # Display frames
